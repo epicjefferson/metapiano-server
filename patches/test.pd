@@ -1,0 +1,15 @@
+#N canvas 623 557 450 300 10;
+#X obj 155 135 loadbang;
+#X msg 155 163 this is a test;
+#X obj 155 189 print;
+#X obj 316 130 r startup;
+#X obj 316 156 route port;
+#X floatatom 316 184 5 0 0 0 - - -;
+#X obj 245 233 print left;
+#X obj 350 242 print right;
+#X connect 0 0 1 0;
+#X connect 1 0 2 0;
+#X connect 3 0 4 0;
+#X connect 4 0 5 0;
+#X connect 4 0 6 0;
+#X connect 4 1 7 0;
