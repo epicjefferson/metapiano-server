@@ -11,8 +11,8 @@ object Application extends Controller {
 
     val pdExe = "/Applications/Pd-extended.app/Contents/Resources/bin/pd"
     val port = 12345
-    val patch = "patches/test.pd"
-    val paths = List.empty[String]
+    val patch = "test.pd"
+    val paths = List("patches")
     val extras = List.empty[String]
 
     PureData.startPD(pdExe, port, patch, paths, extras)

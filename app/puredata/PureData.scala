@@ -81,18 +81,18 @@ class PDProcess() extends Actor {
 
   import scala.sys.process._
 
-  def createCliString(exe:String,
-                      port:Int,
-                      patch:String,
-                      paths:List[String],
-                      extraArgs:List[String]) = {
+  def createArgList(exe:String,
+                    port:Int,
+                    patch:String,
+                    paths:List[String],
+                    extraArgs:List[String]) = {
       val basicArgs = List(exe,
-                           "-send",
                            "-stderr",
                            "-nogui",
                            "-open",
                            patch,
-                           """startup port %d""".format(port))
+                           "-send",
+                           "startup port %d".format(port))
 
       val fullPaths = paths.foldLeft(List.empty[String])(
         (total, current) => {
@@ -100,23 +100,22 @@ class PDProcess() extends Actor {
         }
       )
 
-      val fullArgs = basicArgs ::: fullPaths ::: extraArgs
-      fullArgs.reduceLeft(_ + " " + _)
+      basicArgs ::: fullPaths ::: extraArgs
   }
 
   def receive = {
 
     case StartPD(exe, port, patch, paths, extraArgs) => {
 
-      val cliString = createCliString(exe, port, patch, paths, extraArgs)
+      val args = createArgList(exe, port, patch, paths, extraArgs)
       
-      println("Running this\n******\n%s\n".format(cliString))
+      println("Running this\n******\n%s\n".format(args.toString))
       val logger = ProcessLogger(
         line => sender ! PDMessage(line),
         line => sender ! PDError(line)
       )
 
-      val p = Process(cliString)
+      val p = Process(args)
       val result = p ! logger
 
       sender ! PDFinished(result)
