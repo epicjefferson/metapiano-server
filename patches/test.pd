@@ -7,9 +7,11 @@
 #X floatatom 316 184 5 0 0 0 - - -;
 #X obj 245 233 print left;
 #X obj 350 242 print right;
+#X obj 234 122 print in;
 #X connect 0 0 1 0;
 #X connect 1 0 2 0;
 #X connect 3 0 4 0;
+#X connect 3 0 8 0;
 #X connect 4 0 5 0;
 #X connect 4 0 6 0;
 #X connect 4 1 7 0;
