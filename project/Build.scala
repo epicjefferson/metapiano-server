@@ -8,11 +8,11 @@ object ApplicationBuild extends Build {
     val appVersion      = "1.0"
 
     val appDependencies = Seq(
-      // Add your project dependencies here,
+      "org.jboss.netty" % "netty" % "3.2.7.Final"
     )
 
     val main = PlayProject(appName, appVersion, appDependencies, mainLang = SCALA).settings(
-      // Add your own project settings here      
+      resolvers ++= Seq("jboss repo" at "http://repository.jboss.org/nexus/content/groups/public-jboss/")
     )
 
 }
