@@ -1,6 +1,6 @@
 package com.rumblesan.puredata
 
-import com.rumblesan.network.{ NettyServer, PDConnection, PDMessage}
+import com.rumblesan.network.{ NettyServer, PDConnection, PDMessage, PDChannel}
 
 import play.api.libs.concurrent._
 import play.api.Play.current
@@ -30,9 +30,14 @@ class PureData() extends Actor {
 
   val pdProcess:ActorRef = context.actorOf(Props[PDProcess])
 
-  val pdListener:ActorRef = context.actorOf(Props[PDListener])
+  val pdLogger:ActorRef = {
+    val logFile = current.configuration.getString("patchwerk.logfile").get
+    context.actorOf(Props(new PDLogger(logFile)))
+  }
 
   var running:Boolean = false
+
+  var channel: PDChannel = null
 
   def receive = {
 
@@ -45,37 +50,49 @@ class PureData() extends Actor {
       }
     }
 
-    case PDMessage(line) => {
-      pdListener ! PDMessage(line)
+    case PDMessage(message) => {
+      println(message)
     }
 
-    case PDError(line) => {
-      pdListener ! PDMessage(line)
+    case PDConnection(connection) => {
+      channel = connection
+    }
+
+    case PDStdOut(line) => {
+      pdLogger ! PDStdOut(line)
+    }
+
+    case PDStdErr(line) => {
+      pdLogger ! PDStdOut(line)
     }
 
     case PDFinished(result) => {
       running = false
-      pdListener ! PDFinished(result)
+      pdLogger ! PDFinished(result)
     }
 
   }
 
 }
 
-class PDListener() extends Actor {
+class PDLogger(logFile: String) extends Actor {
+
+  import scalax.io._
+
+  val log = Resource.fromFile(logFile)
 
   def receive = {
 
-    case PDMessage(line) => {
-      println(line)
+    case PDStdOut(line) => {
+      log.write(line + "\n")(Codec.UTF8)
     }
 
-    case PDError(line) => {
-      println("Error: " + line)
+    case PDStdErr(line) => {
+      log.write("Error: " + line + "\n")(Codec.UTF8)
     }
 
     case PDFinished(result) => {
-      println("PD finished with status %d".format(result))
+      log.write("PD finished with status %d\n".format(result))(Codec.UTF8)
     }
 
   }
@@ -116,8 +133,8 @@ class PDProcess() extends Actor {
       
       println("Running this\n******\n%s\n".format(args.toString))
       val logger = ProcessLogger(
-        line => sender ! PDMessage(line),
-        line => sender ! PDError(line)
+        line => sender ! PDStdOut(line),
+        line => sender ! PDStdErr(line)
       )
 
       val p = Process(args)
@@ -139,7 +156,7 @@ case class StartPD(executable:String,
                    extraArgs:List[String])
 
 
-case class PDMessage(line:String)
-case class PDError(line:String)
-case class PDFinished(line:Int)
+case class PDStdOut(line:String)
+case class PDStdErr(line:String)
+case class PDFinished(result:Int)
 
