@@ -1,5 +1,7 @@
 package com.rumblesan.puredata
 
+import com.rumblesan.network.{ NettyServer, PDConnection, PDMessage}
+
 import play.api.libs.concurrent._
 import play.api.Play.current
 
@@ -8,15 +10,18 @@ import akka.actor._
 import play.api._
 import play.api.mvc._
 
+
 object PureData {
 
-  lazy val pd = Akka.system.actorOf(Props[PureData])
+  val pd = Akka.system.actorOf(Props[PureData])
+  val coms = NettyServer
 
   def startPD(exe:String,
               port:Int,
               patch:String,
               paths:List[String],
               extraArgs:List[String]) = {
+    coms.getBootstrap(port, pd)
     pd ! StartPD(exe, port, patch, paths, extraArgs)
   }
 }

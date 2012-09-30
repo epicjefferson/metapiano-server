@@ -15,7 +15,7 @@ import java.util.concurrent.Executors
 
 import akka.actor._
 
-trait NettyServer {
+object NettyServer {
 
   def getBootstrap(port: Int, master: ActorRef): ServerBootstrap = {
 
