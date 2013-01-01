@@ -1,6 +1,6 @@
 import play.api.GlobalSettings
 
-import com.rumblesan.puredata.PureData
+import com.rumblesan.puredata.PureDataManager
 import play.api.Play.current
 
 import play.api.GlobalSettings
@@ -16,7 +16,7 @@ object Global extends GlobalSettings {
     val paths = current.configuration.getString("patchwerk.paths").get.split(",").toList
     val extras = List.empty[String]
 
-    PureData.startPD(pdExe, port, patch, paths, extras)
+    PureDataManager.startPD(pdExe, port, patch, paths, extras)
   }
 
 }
