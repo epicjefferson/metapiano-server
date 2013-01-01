@@ -24,8 +24,6 @@ object NettyServer {
       Executors.newCachedThreadPool()
     )
 
-    println("got bootstrap")
-
     val bootstrap = new ServerBootstrap(factory)
 
     bootstrap.setPipelineFactory(new PDPipelineFactory(master))
@@ -48,8 +46,6 @@ class PDPipelineFactory(actor: ActorRef) extends ChannelPipelineFactory {
 
   def getPipeline(): ChannelPipeline = {
 
-    println("got pipeline")
-
     val pipeline = Channels.pipeline()
 
     pipeline.addLast("framer",  new DelimiterBasedFrameDecoder(1024, true, messageDelimeter))
@@ -70,8 +66,6 @@ class PDMessageHandler(actor: ActorRef) extends SimpleChannelHandler {
 
   override def channelConnected(ctx: ChannelHandlerContext, e: ChannelStateEvent) = {
     val ch: Channel = e.getChannel()
-
-    println("should have connected")
 
     val pdChannel = new PDChannel(ch)
 
