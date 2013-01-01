@@ -11,9 +11,9 @@ import play.api._
 import play.api.mvc._
 
 
-object PureData {
+object PureDataManager {
 
-  val pd = Akka.system.actorOf(Props[PureData])
+  val pd = Akka.system.actorOf(Props[PureDataManager])
   val coms = NettyServer
 
   def startPD(exe:String,
@@ -21,19 +21,21 @@ object PureData {
               patch:String,
               paths:List[String],
               extraArgs:List[String]) = {
+
+    // Start listening for messages from PD
     coms.getBootstrap(port, pd)
+
     pd ! StartPD(exe, port, patch, paths, extraArgs)
   }
 }
 
-class PureData() extends Actor {
+/** This is the actor that starts the PD process as well as handling message passing
+  * between it and the rest of the app
+  */
 
-  val pdProcess:ActorRef = context.actorOf(Props[PDProcess])
+class PureDataManager() extends Actor {
 
-  val pdLogger:ActorRef = {
-    val logFile = current.configuration.getString("patchwerk.logfile").get
-    context.actorOf(Props(new PDLogger(logFile)))
-  }
+  val pdProcess:ActorRef = context.actorOf(Props[PureData])
 
   var running:Boolean = false
 
@@ -50,64 +52,58 @@ class PureData() extends Actor {
       }
     }
 
-    case PDMessage(message) => {
-      println(message)
-    }
-
     case PDConnection(connection) => {
       channel = connection
     }
 
-    case PDStdOut(line) => {
-      pdLogger ! PDStdOut(line)
+    case SendPDMessage(message) => {
+      channel.write(message)
     }
 
-    case PDStdErr(line) => {
-      pdLogger ! PDStdOut(line)
-    }
-
-    case PDFinished(result) => {
-      running = false
-      pdLogger ! PDFinished(result)
+    case PDMessage(message) => {
+      println("Message from PD:  %s".format(message))
     }
 
   }
 
 }
 
-class PDLogger(logFile: String) extends Actor {
+case class SendPDMessage(message: List[String])
+
+
+
+
+trait FileLogger {
 
   import scalax.io._
 
-  val log = Resource.fromFile(logFile)
+  val logFileName: String
+  val log = Resource.fromFile(logFileName)
 
-  def receive = {
-
-    case PDStdOut(line) => {
-      log.write(line + "\n")(Codec.UTF8)
-    }
-
-    case PDStdErr(line) => {
-      log.write("Error: " + line + "\n")(Codec.UTF8)
-    }
-
-    case PDFinished(result) => {
-      log.write("PD finished with status %d\n".format(result))(Codec.UTF8)
-    }
-
+  def writeToLog(output: String) {
+    log.write(output + "\n")(Codec.UTF8)
   }
 
 }
 
-class PDProcess() extends Actor {
+trait PrintLogger {
+
+  def writeToLog(output: String) {
+    println(output)
+  }
+
+}
+
+
+trait PureDataProcess {
 
   import scala.sys.process._
 
-  def createArgList(exe:String,
-                    port:Int,
-                    patch:String,
-                    paths:List[String],
-                    extraArgs:List[String]) = {
+  def createPdArgList(exe:String,
+                      port:Int,
+                      patch:String,
+                      paths:List[String],
+                      extraArgs:List[String]): List[String] = {
       val basicArgs = List(exe,
                            "-stderr",
                            "-nogui",
@@ -125,38 +121,50 @@ class PDProcess() extends Actor {
       basicArgs ::: fullPaths ::: extraArgs
   }
 
-  def receive = {
-
-    case StartPD(exe, port, patch, paths, extraArgs) => {
-
-      val args = createArgList(exe, port, patch, paths, extraArgs)
-      
-      println("Running this\n******\n%s\n".format(args.toString))
+  def startPdProcess(args: List[String]) = {
       val logger = ProcessLogger(
-        line => sender ! PDStdOut(line),
-        line => sender ! PDStdErr(line)
+        line => pdProcessStdOut(line),
+        line => pdProcessStdErr(line)
       )
 
       val p = Process(args)
       val result = p ! logger
+      pdProcessFinished(result)
+  }
 
-      sender ! PDFinished(result)
+  def pdProcessStdOut(line: String): Unit
 
+  def pdProcessStdErr(line: String): Unit
+
+  def pdProcessFinished(result: Int): Unit
+
+}
+
+
+case class StartPD(exe:String, port:Int, patch:String, paths:List[String], extraArgs:List[String])
+
+class PureData() extends Actor with PureDataProcess with PrintLogger {
+
+  def pdProcessStdOut(line: String) {
+    writeToLog(line)
+  }
+
+  def pdProcessStdErr(line: String) {
+    writeToLog(line)
+  }
+
+  def pdProcessFinished(result: Int) {
+    writeToLog("PD finished with status %d".format(result))
+  }
+
+  def receive = {
+
+    case StartPD(exe, port, patch, paths, extraArgs) => {
+      val args = createPdArgList(exe, port, patch, paths, extraArgs)
+      startPdProcess(args)
     }
 
   }
 
 }
-
-
-case class StartPD(executable:String,
-                   port:Int,
-                   patch:String,
-                   paths:List[String],
-                   extraArgs:List[String])
-
-
-case class PDStdOut(line:String)
-case class PDStdErr(line:String)
-case class PDFinished(result:Int)
 
