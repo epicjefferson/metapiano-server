@@ -15,26 +15,21 @@ import java.util.concurrent.Executors
 
 import akka.actor._
 
-object NettyServer {
+class PDComs(port: Int, manager: ActorRef) {
 
-  def getBootstrap(port: Int, master: ActorRef): ServerBootstrap = {
-
-    val factory: ChannelFactory = new NioServerSocketChannelFactory(
+  val bootstrap = new ServerBootstrap(
+    new NioServerSocketChannelFactory(
       Executors.newCachedThreadPool(),
       Executors.newCachedThreadPool()
     )
+  )
 
-    val bootstrap = new ServerBootstrap(factory)
+  bootstrap.setPipelineFactory(new PDPipelineFactory(manager))
 
-    bootstrap.setPipelineFactory(new PDPipelineFactory(master))
+  bootstrap.setOption("child.tcpNoDelay", true)
+  bootstrap.setOption("child.keepAlive", true)
 
-    bootstrap.setOption("child.tcpNoDelay", true)
-    bootstrap.setOption("child.keepAlive", true)
-
-    bootstrap.bind(new InetSocketAddress(port))
-
-    bootstrap
-  }
+  bootstrap.bind(new InetSocketAddress(port))
 
 }
 
