@@ -1,6 +1,6 @@
 package com.rumblesan.puredata
 
-import com.rumblesan.network.{ NettyServer, PDConnection, PDMessage, PDChannel}
+import com.rumblesan.network.{PDComs, PDConnection, PDMessage, PDChannel}
 
 import play.api.libs.concurrent._
 import play.api.Play.current
@@ -11,33 +11,16 @@ import play.api._
 import play.api.mvc._
 
 
-object PureDataManager {
-
-  val pd = Akka.system.actorOf(Props[PureDataManager])
-  val coms = NettyServer
-
-  def startPD(exe:String,
-              port:Int,
-              patch:String,
-              paths:List[String],
-              extraArgs:List[String]) = {
-
-    // Start listening for messages from PD
-    coms.getBootstrap(port, pd)
-
-    pd ! StartPD(exe, port, patch, paths, extraArgs)
-  }
-}
-
 /** This is the actor that starts the PD process as well as handling message passing
   * between it and the rest of the app
   */
 
-class PureDataManager() extends Actor {
+class PureDataManager(port: Int) extends Actor {
 
   val pdProcess:ActorRef = context.actorOf(Props[PureData])
+  val pdComs = new PDComs(port, self)
 
-  var running:Boolean = false
+  var running: Boolean = false
 
   var channel: PDChannel = null
 
@@ -48,6 +31,7 @@ class PureDataManager() extends Actor {
         println("Already Running")
       } else {
         pdProcess ! StartPD(exe, port, patch, paths, extraArgs)
+
         running = true
       }
     }
