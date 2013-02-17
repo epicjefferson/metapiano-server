@@ -1,13 +1,18 @@
 import play.api.GlobalSettings
 
-import com.rumblesan.puredata.PureDataManager
+import com.rumblesan.puredata.{ PureDataManager, StartPD }
 import play.api.Play.current
 
 import play.api.GlobalSettings
 
 import play.api.Application
 
+import play.api.libs.concurrent._
+import akka.actor._
+
 object Global extends GlobalSettings {
+
+  var pd: ActorRef = null
 
   override def onStart(app: Application) {
     val pdExe = current.configuration.getString("patchwerk.puredata").get
@@ -16,7 +21,9 @@ object Global extends GlobalSettings {
     val paths = current.configuration.getString("patchwerk.paths").get.split(",").toList
     val extras = List.empty[String]
 
-    PureDataManager.startPD(pdExe, port, patch, paths, extras)
+    pd = Akka.system.actorOf(Props(new PureDataManager(port)))
+
+    pd ! StartPD(pdExe, port, patch, paths, extras)
   }
 
 }
