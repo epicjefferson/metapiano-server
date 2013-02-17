@@ -35,7 +35,7 @@ class PDComs(port: Int, manager: ActorRef) {
 
 class PDPipelineFactory(actor: ActorRef) extends ChannelPipelineFactory {
 
-  val master = actor
+  val manager = actor
 
   val messageDelimeter = ChannelBuffers.copiedBuffer(";\n", Charset.forName("UTF-8"))
 
@@ -46,7 +46,7 @@ class PDPipelineFactory(actor: ActorRef) extends ChannelPipelineFactory {
     pipeline.addLast("framer",  new DelimiterBasedFrameDecoder(1024, true, messageDelimeter))
     pipeline.addLast("decoder", new StringDecoder())
     pipeline.addLast("encoder", new StringEncoder())
-    pipeline.addLast("handler", new PDMessageHandler(master))
+    pipeline.addLast("handler", new PDMessageHandler(manager))
 
     return pipeline
   }
@@ -57,14 +57,14 @@ class PDPipelineFactory(actor: ActorRef) extends ChannelPipelineFactory {
 
 class PDMessageHandler(actor: ActorRef) extends SimpleChannelHandler {
 
-  val master = actor
+  val manager = actor
 
   override def channelConnected(ctx: ChannelHandlerContext, e: ChannelStateEvent) = {
     val ch: Channel = e.getChannel()
 
     val pdChannel = new PDChannel(ch)
 
-    master ! PDConnection(pdChannel)
+    manager ! PDConnection(pdChannel)
   }
 
   override def messageReceived(ctx: ChannelHandlerContext, e: MessageEvent) = {
@@ -72,7 +72,7 @@ class PDMessageHandler(actor: ActorRef) extends SimpleChannelHandler {
 
     val message = e.getMessage().asInstanceOf[String].split(" ").toList
 
-    master ! PDMessage(message)
+    manager ! PDMessage(message)
   }
 
   override def exceptionCaught(ctx: ChannelHandlerContext, e: ExceptionEvent) {
