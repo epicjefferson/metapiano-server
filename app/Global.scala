@@ -1,6 +1,6 @@
 import play.api.GlobalSettings
 
-import com.rumblesan.scalapd.StartPD
+import com.rumblesan.scalapd.{ StartPD, KillPd }
 import play.api.Play.current
 
 import play.api.GlobalSettings
@@ -20,6 +20,10 @@ object Global extends GlobalSettings {
     val extras = List.empty[String]
 
     com.rumblesan.patchwerk.PureData.manager ! StartPD(pdExe, port, patch, paths, extras)
+  }
+
+  override def onStop(app: Application) {
+    com.rumblesan.patchwerk.PureData.manager ! KillPd()
   }
 
 }
