@@ -8,7 +8,8 @@ object ApplicationBuild extends Build {
     val appVersion      = "1.0"
 
     val appDependencies = Seq(
-      "org.jboss.netty" % "netty" % "3.2.7.Final"
+      "org.jboss.netty" % "netty" % "3.2.7.Final",
+      "com.rumblesan" %% "scalapd" % "0.1.0"
     )
 
     val main = PlayProject(appName, appVersion, appDependencies, mainLang = SCALA).settings(
