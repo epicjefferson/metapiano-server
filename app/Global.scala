@@ -19,7 +19,7 @@ object Global extends GlobalSettings {
     val paths = current.configuration.getString("patchwerk.paths").get.split(",").toList
     val extras = List.empty[String]
 
-    com.rumblesan.patchwerk.PureData.manager ! StartPD(pdExe, port, patch, paths, extras)
+    com.rumblesan.patchwerk.PureData.manager ! StartPD(pdExe, port, patch, paths, extras, Some(com.rumblesan.patchwerk.PureData.patchwerk))
   }
 
   override def onStop(app: Application) {
