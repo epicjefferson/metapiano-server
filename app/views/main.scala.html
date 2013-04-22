@@ -1,15 +1,21 @@
-@(content: Html)
+@()
 
 <!DOCTYPE html>
 
 <html>
     <head>
         <title>PatchWerk Radio</title>
-        <link rel="stylesheet" media="screen" href="@routes.Assets.at("stylesheets/main.css")">
-        <link rel="shortcut icon" type="image/png" href="@routes.Assets.at("images/favicon.png")">
-        <script src="@routes.Assets.at("javascripts/jquery-1.7.1.min.js")" type="text/javascript"></script>
+        <script src="@routes.Assets.at("javascripts/jquery-1.9.1.min.js")" type="text/javascript"></script>
+        <script src="@routes.Assets.at("javascripts/patchwerk.js")" type="text/javascript"></script>
     </head>
     <body>
-        @content
+
+    <textarea id="pdcommand" cols="100" rows="5">
+    </textarea>
+    <br>
+    <input id="entercommand" type="button" value="Enter"></input>
+    <ul id="commanddisplay">
+    </ul>
+
     </body>
 </html>
