@@ -6,3 +6,4 @@ tmp
 .history
 .DS_Store
 logfile
+dist
