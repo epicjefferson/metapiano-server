@@ -1,7 +1,6 @@
 package com.rumblesan.patchwerk
 
-import com.rumblesan.scalapd.{ PureDataManager, FileLogger, LogMessage }
-import com.rumblesan.scalapd.network.PDMessage
+import com.rumblesan.scalapd.{ SendPDMessage, PureDataManager, FileLogger, LogMessage }
 
 import play.api.libs.concurrent._
 import akka.actor._
@@ -18,23 +17,26 @@ class StateManager(targetActor: ActorRef) extends Actor {
   val target = targetActor
 
   lazy val states:Map[Long, SystemState] = Map(
-    1L -> SystemState(1, "basic", 1, List("statenamne", "basic"), 2),
-    2L -> SystemState(2, "different", 1, List("statenamne", "different"), 1)
+    1L -> SystemState(1, "basic", 1, List("statename", "basic"), 2),
+    2L -> SystemState(2, "different", 1, List("statename", "different"), 1)
   )
 
-  var currentState: Long = 1
+  var currentState: Long = 0
 
   var scheduledOpt: Option[Cancellable] = None
 
 
   def changeState(id: Long) = {
+    println("changing state")
     states.get(id).map(state =>
 
       if (currentState != state.id) {
 
         currentState = state.id
 
-        target ! StateMessage(state.message)
+        println("changing to state %s".format(id))
+
+        target ! SendPDMessage(state.message)
 
         for {
           cancellable <- scheduledOpt
