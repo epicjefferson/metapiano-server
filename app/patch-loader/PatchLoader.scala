@@ -5,12 +5,28 @@ import akka.actor._
 
 import play.api.Play.current
 
+import java.io.File
+
+import scala.util.Random
+
+
 
 class PatchLoader extends Actor {
 
+  val patchfolder = new File(
+    current.configuration.getString("patchwerk.patchfolder").get
+  )
+
+  def getPatch: String = Random.shuffle(patchfolder.list).head
+
   def receive = {
 
-    case PatchRequest => sender ! PatchLoad(List("load", "patchname"))
+    case PatchRequest => sender ! PatchLoad(
+      List(
+        "load",
+        getPatch
+      )
+    )
 
   }
 
