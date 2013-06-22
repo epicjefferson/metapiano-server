@@ -61,6 +61,8 @@ class Patchwerk extends Actor {
 
   lazy val patchloader = Akka.system.actorOf(Props[PatchLoader])
 
+  lazy val poemloader = Akka.system.actorOf(Props[PoemLoader])
+
   def receive = {
 
     case PDMessage(message) => parsePDMessage(message)
@@ -72,6 +74,11 @@ class Patchwerk extends Actor {
 
     case PatchLoad(message) => {
       Logger.info("Patch load sent to PD: " + message.tail.head.toString)
+      puredata ! SendPDMessage(message)
+    }
+
+    case PoemLoad(message) => {
+      Logger.info("Poem load sent to PD: " + message.tail.head.toString)
       puredata ! SendPDMessage(message)
     }
 
@@ -104,6 +111,10 @@ class Patchwerk extends Actor {
       case "patchload" :: Nil => {
         Logger.info("Patch requested")
         patchloader ! PatchRequest()
+      }
+      case "poemload" :: Nil => {
+        Logger.info("Poem requested")
+        poemloader ! PoemRequest()
       }
       case "poemload" :: Nil => {
         Logger.info("Poem requested")

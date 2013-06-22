@@ -14,7 +14,7 @@ object ApplicationBuild extends Build {
       "postgresql" % "postgresql" % "9.1-901.jdbc4",
       "org.mockito" % "mockito-core" % "1.9.5" % "test",
       "org.jboss.netty" % "netty" % "3.2.7.Final",
-      "com.rumblesan" %% "scalapd" % "0.1.0"
+      "com.rumblesan" %% "scalapd" % "0.1-SNAPSHOT"
     )
 
     val main = play.Project(
