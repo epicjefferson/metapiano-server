@@ -8,6 +8,7 @@ import akka.actor._
 import play.api.Play.current
 import play.api.Logger
 
+import scala.collection.JavaConversions._
 
 object PatchWerk {
 
@@ -19,11 +20,19 @@ object PatchWerk {
 
     val pdExe = current.configuration.getString("patchwerk.puredata").get
     val port = current.configuration.getInt("patchwerk.port").get
-    val patch = current.configuration.getString("patchwerk.patch").get
-    val paths = current.configuration.getString("patchwerk.paths").get.split(",").toList
+
+    val masterpatch = current.configuration.getString("patchwerk.masterpatch").get
+
+    val masterpatchfolder = current.configuration.getString("patchwerk.masterpatchfolder").get
+    val patchfolder = current.configuration.getString("patchwerk.patchfolder").get
+    val poemfolder = current.configuration.getString("patchwerk.poemfolder").get
+    val extrapaths = current.configuration.getStringList("patchwerk.extrapaths").get.toList
+
+    val paths = masterpatchfolder :: patchfolder :: poemfolder :: extrapaths
+
     val extras = List.empty[String]
 
-    patchwerk ! StartPD(pdExe, port, patch, paths, extras, Some(patchwerk))
+    patchwerk ! StartPD(pdExe, port, masterpatch, paths.toList, extras, Some(patchwerk))
   }
 
   def stopPD() = {
