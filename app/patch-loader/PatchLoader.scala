@@ -9,6 +9,8 @@ import java.io.File
 
 import scala.util.Random
 
+import play.api.Logger
+
 
 
 class PatchLoader extends Actor {
@@ -17,16 +19,19 @@ class PatchLoader extends Actor {
     current.configuration.getString("patchwerk.patchfolder").get
   )
 
-  def getPatch: String = Random.shuffle(patchfolder.list).head
+  def getPatch: String = Random.shuffle(patchfolder.list.toList).head
 
   def receive = {
 
-    case PatchRequest => sender ! PatchLoad(
-      List(
-        "load",
-        getPatch
+    case PatchRequest() => {
+      Logger.info("Loading a patch")
+      sender ! PatchLoad(
+        List(
+          "load",
+          getPatch
+        )
       )
-    )
+    }
 
   }
 

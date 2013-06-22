@@ -7,6 +7,7 @@ import play.api.libs.concurrent._
 import akka.actor._
 
 import play.api.Play.current
+import play.api.Logger
 
 
 object PatchWerk {
@@ -21,6 +22,8 @@ object PatchWerk {
     val patch = current.configuration.getString("patchwerk.patch").get
     val paths = current.configuration.getString("patchwerk.paths").get.split(",").toList
     val extras = List.empty[String]
+
+    Logger.info("startPD called")
 
     patchwerk ! StartPD(pdExe, port, patch, paths, extras, Some(patchwerk))
   }
@@ -56,6 +59,8 @@ class PatchwerkListener(logFileName: String) extends Actor {
 
 class Patchwerk extends Actor {
 
+  Logger.info("patchwerk class created")
+
   lazy val listener = Props(new PatchwerkListener(PatchWerk.logFileName))
 
   lazy val puredata = Akka.system.actorOf(Props(new PureDataManager(listener)))
@@ -70,26 +75,39 @@ class Patchwerk extends Actor {
 
     case message: SendPDMessage => puredata ! message
 
-    case start: StartPD => puredata ! start
+    case PatchLoad(message) => {
+      Logger.info("patch load sent to PD" + message.toString)
+      puredata ! SendPDMessage(message)
+    }
+
+    case start: StartPD => {
+      puredata ! start
+      Logger.info("start pd message sent")
+    }
 
     case kill: KillPd => puredata ! kill
-
-    case start: StartPD => puredata ! start
 
   }
 
   def parsePDMessage(message: List[String]) {
 
+    Logger.info("pd message received")
+
     message match {
       case "started" :: Nil => {
-        println("PD has started")
+        Logger.info("PD has started")
 
         statemanager ! StateChange(1)
 
       }
-      case "patchload" :: Nil => println("wanted to load a patch")
-      case "poemload" :: Nil => println("wanted to load a poem")
-      case other => println("something else" + other.toString)
+      case "patchload" :: Nil => {
+        Logger.info("Patch requested")
+        patchloader ! PatchRequest()
+      }
+      case "poemload" :: Nil => {
+        Logger.info("wanted to load a poem")
+      }
+      case other => Logger.info("something else" + other.toString)
     }
 
   }
