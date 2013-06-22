@@ -1,4 +1,4 @@
-package com.rumblesan.patchwerk
+package com.rumblesan.metapiano
 
 import play.api.libs.concurrent._
 import akka.actor._
@@ -16,7 +16,7 @@ import play.api.Logger
 class PatchLoader extends Actor {
 
   val patchfolder = new File(
-    current.configuration.getString("patchwerk.patchfolder").get
+    current.configuration.getString("metapiano.patchfolder").get
   )
 
   def getPatch: String = Random.shuffle(patchfolder.list.toList).head

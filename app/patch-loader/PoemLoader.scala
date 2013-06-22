@@ -1,4 +1,4 @@
-package com.rumblesan.patchwerk
+package com.rumblesan.metapiano
 
 import play.api.libs.concurrent._
 import akka.actor._
@@ -16,7 +16,7 @@ import play.api.Logger
 class PoemLoader extends Actor {
 
   val poemfolder = new File(
-    current.configuration.getString("patchwerk.poemfolder").get
+    current.configuration.getString("metapiano.poemfolder").get
   )
 
   def getPoem: String = Random.shuffle(poemfolder.list.toList).head

@@ -2,16 +2,16 @@ import play.api.GlobalSettings
 
 import play.api.Application
 
-import com.rumblesan.patchwerk.PatchWerk
+import com.rumblesan.metapiano.MetaPiano
 
 object Global extends GlobalSettings {
 
   override def onStart(app: Application) {
-    PatchWerk.startPD()
+    MetaPiano.start()
   }
 
   override def onStop(app: Application) {
-    PatchWerk.stopPD()
+    MetaPiano.stop()
   }
 
 }

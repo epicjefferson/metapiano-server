@@ -1,4 +1,4 @@
-package com.rumblesan.patchwerk
+package com.rumblesan.metapiano
 
 import com.rumblesan.scalapd.{ PureDataManager, StartPD, KillPd, PDMessage, LogMessage, SendPDMessage }
 
@@ -10,39 +10,39 @@ import play.api.Logger
 
 import scala.collection.JavaConversions._
 
-object PatchWerk {
+object MetaPiano {
 
-  lazy val patchwerk = Akka.system.actorOf(Props[Patchwerk])
+  lazy val metapiano = Akka.system.actorOf(Props[MetaPiano])
 
-  lazy val logFileName = current.configuration.getString("patchwerk.logfile").get
+  lazy val logFileName = current.configuration.getString("metapiano.logfile").get
 
-  def startPD() = {
+  def start() = {
 
-    val pdExe = current.configuration.getString("patchwerk.puredata").get
-    val port = current.configuration.getInt("patchwerk.port").get
+    val pdExe = current.configuration.getString("metapiano.puredata").get
+    val port = current.configuration.getInt("metapiano.port").get
 
-    val masterpatch = current.configuration.getString("patchwerk.masterpatch").get
+    val masterpatch = current.configuration.getString("metapiano.masterpatch").get
 
-    val masterpatchfolder = current.configuration.getString("patchwerk.masterpatchfolder").get
-    val patchfolder = current.configuration.getString("patchwerk.patchfolder").get
-    val poemfolder = current.configuration.getString("patchwerk.poemfolder").get
-    val extrapaths = current.configuration.getStringList("patchwerk.extrapaths").get.toList
+    val masterpatchfolder = current.configuration.getString("metapiano.masterpatchfolder").get
+    val patchfolder = current.configuration.getString("metapiano.patchfolder").get
+    val poemfolder = current.configuration.getString("metapiano.poemfolder").get
+    val extrapaths = current.configuration.getStringList("metapiano.extrapaths").get.toList
 
     val paths = masterpatchfolder :: patchfolder :: poemfolder :: extrapaths
 
     val extras = List.empty[String]
 
-    patchwerk ! StartPD(pdExe, port, masterpatch, paths.toList, extras, Some(patchwerk))
+    metapiano ! StartPD(pdExe, port, masterpatch, paths.toList, extras, Some(metapiano))
   }
 
-  def stopPD() = {
-    patchwerk ! KillPd()
+  def stop() = {
+    metapiano ! KillPd()
   }
 
 }
 
 
-class PatchwerkListener(logFileName: String) extends Actor {
+class PDListener(logFileName: String) extends Actor {
 
   import java.io.{BufferedWriter, FileWriter}
 
@@ -60,9 +60,9 @@ class PatchwerkListener(logFileName: String) extends Actor {
 }
 
 
-class Patchwerk extends Actor {
+class MetaPiano extends Actor {
 
-  lazy val listenerProps = Props(new PatchwerkListener(PatchWerk.logFileName))
+  lazy val listenerProps = Props(new PDListener(MetaPiano.logFileName))
 
   lazy val puredata = Akka.system.actorOf(Props(new PureDataManager(listenerProps)))
 

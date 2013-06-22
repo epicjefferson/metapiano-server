@@ -1,4 +1,4 @@
-package com.rumblesan.patchwerk
+package com.rumblesan.metapiano
 
 import play.api.libs.concurrent._
 import akka.actor._
