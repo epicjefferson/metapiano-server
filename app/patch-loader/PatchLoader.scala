@@ -28,6 +28,7 @@ class PatchLoader extends Actor {
       sender ! PatchLoad(
         List(
           "load",
+          "patch",
           getPatch
         )
       )
