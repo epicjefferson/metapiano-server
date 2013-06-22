@@ -1,7 +1,5 @@
 package com.rumblesan.patchwerk
 
-import com.rumblesan.scalapd.{ SendPDMessage, PureDataManager, FileLogger, LogMessage }
-
 import play.api.libs.concurrent._
 import akka.actor._
 
@@ -36,7 +34,7 @@ class StateManager(targetActor: ActorRef) extends Actor {
 
         println("changing to state %s".format(id))
 
-        target ! SendPDMessage(state.message)
+        target ! StateMessage(state.message)
 
         for {
           cancellable <- scheduledOpt
