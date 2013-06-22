@@ -116,9 +116,6 @@ class Patchwerk extends Actor {
         Logger.info("Poem requested")
         poemloader ! PoemRequest()
       }
-      case "poemload" :: Nil => {
-        Logger.info("Poem requested")
-      }
       case other => Logger.info("Unknown message: " + other.toString)
     }
 

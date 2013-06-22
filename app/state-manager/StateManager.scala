@@ -15,8 +15,8 @@ class StateManager(targetActor: ActorRef) extends Actor {
   val target = targetActor
 
   lazy val states:Map[Long, SystemState] = Map(
-    1L -> SystemState(1, "basic", 1, List("statename", "basic"), 2),
-    2L -> SystemState(2, "different", 1, List("statename", "different"), 1)
+    1L -> SystemState(1, "basic", 1, List("statename", "patches"), 2),
+    2L -> SystemState(2, "different", 1, List("statename", "poems"), 1)
   )
 
   var currentState: Long = 0
