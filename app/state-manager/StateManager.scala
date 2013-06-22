@@ -9,30 +9,49 @@ import scala.concurrent.duration._
 import scala.concurrent._
 import ExecutionContext.Implicits.global
 
+import play.api.Logger
+
+import scala.collection.JavaConversions._
+
+
 
 class StateManager(targetActor: ActorRef) extends Actor {
 
   val target = targetActor
 
-  lazy val states:Map[Long, SystemState] = Map(
-    1L -> SystemState(1, "basic", 1, List("statename", "patches"), 2),
-    2L -> SystemState(2, "different", 1, List("statename", "poems"), 1)
-  )
+  lazy val states: Map[String, SystemState] = {
+    (
+      for {
+        stateconfig <- current.configuration.getObject("metapiano.statechanger.state")
+      } yield for {
+        statename <- stateconfig.keySet
+        state = stateconfig.toConfig.getConfig(statename)
+        duration = state.getInt("duration")
+        message = state.getStringList("message").toList
+        nextstate = state.getString("nextstate")
+      } yield (statename, SystemState(statename, duration, message, nextstate))
+    ).map(_.toMap).getOrElse(Map.empty[String, SystemState])
+  }
 
-  var currentState: Long = 0
+  var currentState: String = ""
+  var firstState: String = current.configuration.getString("metapiano.statechanger.firststate").get
 
   var scheduledOpt: Option[Cancellable] = None
 
 
-  def changeState(id: Long) = {
+  def changeState(name: String) = {
     println("changing state")
-    states.get(id).map(state =>
 
-      if (currentState != state.id) {
+      Logger.info("new state is " + name.toString)
+      Logger.info("current state is " + currentState)
 
-        currentState = state.id
+    states.get(name).map(state =>
 
-        println("changing to state %s".format(id))
+      if (currentState != state.name) {
+
+        currentState = state.name
+
+        println("changing to state %s".format(name))
 
         target ! StateMessage(state.message)
 
@@ -61,19 +80,22 @@ class StateManager(targetActor: ActorRef) extends Actor {
 
     case StateQuery => sender ! CurrentState(states(currentState))
 
-    case StateChange(id) => changeState(id)
+    case StateChange(name) => changeState(name)
+
+    case StartStateMachine() => changeState(firstState)
 
   }
 
 }
 
 
-case class SystemState(id: Long, name: String, durationMins: Int, message: List[String], nextState: Long)
+case class SystemState(name: String, durationMins: Int, message: List[String], nextState: String)
 
 
 case class StateQuery()
 case class CurrentState(state: SystemState)
 
-case class StateChange(id: Long)
+case class StateChange(name: String)
 case class StateMessage(message: List[String])
+case class StartStateMachine()
 

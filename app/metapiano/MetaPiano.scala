@@ -115,7 +115,7 @@ class MetaPiano extends Actor {
     message match {
       case "started" :: Nil => {
         Logger.info("PD has started")
-        statemanager ! StateChange(1)
+        statemanager ! StartStateMachine()
       }
       case "patchload" :: Nil => {
         Logger.info("Patch requested")
