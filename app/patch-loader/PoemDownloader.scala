@@ -11,19 +11,28 @@ import ExecutionContext.Implicits.global
 
 import play.api.Logger
 
+import play.api.libs.ws.WS
+
+import models.MetaPoem
 
 
-class PoemRetriever() extends Actor {
+class PoemRetriever extends Actor {
 
   var scheduledOpt: Option[Cancellable] = None
 
+  val startDuration = 1 minutes
   val fetchDuration = 30 minutes
+
+  val poemUrl = current.configuration.getString("metapiano.site.poemendpoint").get
 
   def setup = {
 
+    Logger.info("Retrieving poems")
+
     scheduledOpt =  Some(
       Akka.system.scheduler.schedule(
-        fetchDuration
+        startDuration,
+        fetchDuration,
         self,
         RetrievePoems
       )
@@ -32,15 +41,22 @@ class PoemRetriever() extends Actor {
   }
 
   def getPoems = {
-    println("Retrieving Poems")
-
-
+    WS.url(poemUrl).get().map { response =>
+      response.json.validate[List[MetaPoem]].fold(
+        invalid = (
+          error => Logger.error(error.toString)
+        ),
+        valid = (
+          poems => Logger.info(poems.toString)
+        )
+      )
+    }
   }
 
 
   def receive = {
 
-    case StartRetrieving => getPoems
+    case StartRetrieving => setup
 
     case RetrievePoems => getPoems
 

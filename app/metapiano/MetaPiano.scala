@@ -72,6 +72,8 @@ class MetaPiano extends Actor {
 
   lazy val poemloader = Akka.system.actorOf(Props[PoemLoader])
 
+  lazy val poemretriever = Akka.system.actorOf(Props[PoemRetriever])
+
   def receive = {
 
     case PDMessage(message) => parsePDMessage(message)
@@ -116,6 +118,7 @@ class MetaPiano extends Actor {
       case "started" :: Nil => {
         Logger.info("PD has started")
         statemanager ! StartStateMachine()
+        poemretriever ! StartRetrieving
       }
       case "patchload" :: Nil => {
         Logger.info("Patch requested")
