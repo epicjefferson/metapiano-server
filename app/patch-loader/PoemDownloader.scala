@@ -16,6 +16,12 @@ import play.api.libs.ws.WS
 import models.MetaPoem
 
 
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
+
+
 class PoemRetriever extends Actor {
 
   var scheduledOpt: Option[Cancellable] = None
@@ -24,6 +30,8 @@ class PoemRetriever extends Actor {
   val fetchDuration = 30 minutes
 
   val poemUrl = current.configuration.getString("metapiano.site.poemendpoint").get
+
+  val poemFolder = current.configuration.getString("metapiano.poemfolder").get
 
   def setup = {
 
@@ -40,6 +48,30 @@ class PoemRetriever extends Actor {
 
   }
 
+  def savePoemToFolder(poem: MetaPoem) {
+
+    try {
+      val pFile = new File(poemFolder + "/" + poem.id.toString)
+
+      if (pFile.exists()) {
+        Logger.error("File already exists for id %d".format(poem.id))
+      } else {
+        pFile.createNewFile()
+
+        val fw: FileWriter = new FileWriter(pFile.getAbsoluteFile())
+        val bw: BufferedWriter = new BufferedWriter(fw)
+        bw.write(poem.text)
+        bw.close()
+
+        Logger.info("Saved poem to disk: " + poem.id.toString)
+
+      }
+    } catch {
+      case ioe: IOException => ioe.printStackTrace()
+    }
+
+  }
+
   def getPoems = {
     WS.url(poemUrl).get().map { response =>
       response.json.validate[List[MetaPoem]].fold(
@@ -47,7 +79,11 @@ class PoemRetriever extends Actor {
           error => Logger.error(error.toString)
         ),
         valid = (
-          poems => Logger.info(poems.toString)
+          poems => {
+            for (p <- poems) {
+              savePoemToFolder(p)
+            }
+          }
         )
       )
     }
