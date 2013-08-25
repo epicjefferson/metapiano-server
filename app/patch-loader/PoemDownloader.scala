@@ -13,7 +13,7 @@ import play.api.Logger
 
 import play.api.libs.ws.WS
 
-import models.MetaPoem
+import models.{ MetaPoem, ServerState }
 
 
 import java.io.BufferedWriter;
@@ -30,6 +30,7 @@ class PoemRetriever extends Actor {
   val fetchDuration = 30 minutes
 
   val poemUrl = current.configuration.getString("metapiano.site.poemendpoint").get
+  val poemIdParam = current.configuration.getString("metapiano.site.poemidparam").get
 
   val poemFolder = current.configuration.getString("metapiano.poemfolder").get
 
@@ -73,6 +74,15 @@ class PoemRetriever extends Actor {
   }
 
   def getPoems = {
+
+    Logger.debug("Getting poems")
+
+    val state = ServerState.retrieveOne(
+      1
+    ).getOrElse(ServerState.create(ServerState(1, 0)))
+
+    val requestUrl = poemUrl + "?%s=%s".format(poemIdParam, state.lastPoem)
+
     WS.url(poemUrl).get().map { response =>
       response.json.validate[List[MetaPoem]].fold(
         invalid = (
@@ -83,10 +93,13 @@ class PoemRetriever extends Actor {
             for (p <- poems) {
               savePoemToFolder(p)
             }
+            val maxId = poems.map(_.id).max
+            ServerState.updateLastPoemId(1, maxId)
           }
         )
       )
     }
+
   }
 
 
