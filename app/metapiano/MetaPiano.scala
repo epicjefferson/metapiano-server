@@ -1,6 +1,7 @@
 package com.rumblesan.metapiano
 
-import com.rumblesan.scalapd.{ PureDataManager, StartPD, KillPd, PDMessage, LogMessage, SendPDMessage }
+import com.rumblesan.scalapd.{ PureDataManager, StartPD, KillPd, LogMessage, SendPDMessage }
+import com.rumblesan.scalapd.network.PDMessage
 
 import play.api.libs.concurrent._
 import akka.actor._

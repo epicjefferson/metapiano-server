@@ -13,8 +13,7 @@ object ApplicationBuild extends Build {
       "org.squeryl" %% "squeryl" % "0.9.5-6",
       "postgresql" % "postgresql" % "9.1-901.jdbc4",
       "org.mockito" % "mockito-core" % "1.9.5" % "test",
-      "org.jboss.netty" % "netty" % "3.2.7.Final",
-      "com.rumblesan" %% "scalapd" % "0.1-SNAPSHOT"
+      "org.jboss.netty" % "netty" % "3.2.7.Final"
     )
 
     val main = play.Project(
