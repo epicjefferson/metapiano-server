@@ -75,26 +75,34 @@ class PoemRetriever extends Actor {
 
   def getPoems = {
 
-    Logger.debug("Getting poems")
-
     val state = ServerState.retrieveOne(
       1
     ).getOrElse(ServerState.create(ServerState(1, 0)))
 
     val requestUrl = poemUrl + "?%s=%s".format(poemIdParam, state.lastPoem)
 
-    WS.url(poemUrl).get().map { response =>
+    Logger.info("Downloading poems from %s".format(requestUrl))
+
+    WS.url(requestUrl).get().map { response =>
+      Logger.info("Got response from poem site")
       response.json.validate[List[MetaPoem]].fold(
         invalid = (
           error => Logger.error(error.toString)
         ),
         valid = (
           poems => {
+            Logger.info("Downloaded %s poems".format(poems.length.toString))
             for (p <- poems) {
               savePoemToFolder(p)
+              Logger.info(p.toString)
             }
-            val maxId = poems.map(_.id).max
-            ServerState.updateLastPoemId(1, maxId)
+            if (poems.nonEmpty) {
+              val maxId = poems.map(_.id).max
+              Logger.info("Max poem id is %s".format(maxId.toString))
+              ServerState.updateLastPoemId(1, poems.map(_.id).max)
+            } else {
+              Logger.info("No new poems to download")
+            }
           }
         )
       )
