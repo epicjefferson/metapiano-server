@@ -2,7 +2,7 @@ package com.rumblesan.metapiano
 
 
 
-object PatchTranslator {
+object PoemTranslator {
 
   def translatePoem(poem: String): String = {
     poem.toLowerCase.map(c => translateSymbol(c) ++ " ").mkString

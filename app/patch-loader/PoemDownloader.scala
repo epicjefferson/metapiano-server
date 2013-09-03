@@ -93,7 +93,11 @@ class PoemRetriever extends Actor {
           poems => {
             Logger.info("Downloaded %s poems".format(poems.length.toString))
             for (p <- poems) {
-              savePoemToFolder(p)
+              savePoemToFolder(
+                p.copy(text =
+                  PoemTranslator.translatePoem(p.text)
+                )
+              )
               Logger.info(p.toString)
             }
             if (poems.nonEmpty) {
