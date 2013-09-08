@@ -1,21 +1,41 @@
-@()
+@(statename: String)
 
 <!DOCTYPE html>
 
 <html>
     <head>
         <title>MetaPiano</title>
-        <script src="@routes.Assets.at("javascripts/jquery-1.9.1.min.js")" type="text/javascript"></script>
-        <script src="@routes.Assets.at("javascripts/patchwerk.js")" type="text/javascript"></script>
+
+        <link rel='stylesheet' media='screen' href='@routes.Assets.at("css/bootstrap.min.css")'>
+
     </head>
     <body>
 
-    <textarea id="pdcommand" cols="100" rows="5">
-    </textarea>
-    <br>
-    <input id="entercommand" type="button" value="Enter"></input>
-    <ul id="commanddisplay">
-    </ul>
+        <div class='container'>
+
+            <div class='navbar navbar-default' role='navigation'>
+                <p class='navbar-text'>MetaPiano</p>
+            </div>
+
+            <div class='content'>
+                <div class='row'>
+                    <div class='col-xs-12'>
+
+                        <div class="panel panel-default">
+                            <div class="panel-heading">
+                                <h3 class="panel-title">Current State</h3>
+                            </div>
+                            <div class="panel-body">
+                                @statename
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
 
     </body>
 </html>
