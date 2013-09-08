@@ -5,7 +5,7 @@ import play.Project._
 object ApplicationBuild extends Build {
 
     val appName         = "metapiano"
-    val appVersion      = "1.0"
+    val appVersion      = "2.0"
 
     val appDependencies = Seq(
       jdbc,
