@@ -5,6 +5,11 @@ import com.rumblesan.scalapd.network.PDMessage
 
 import play.api.libs.concurrent._
 import akka.actor._
+import akka.pattern.ask
+import akka.util.Timeout
+import scala.concurrent.duration._
+import scala.concurrent._
+import ExecutionContext.Implicits.global
 
 import play.api.Play.current
 import play.api.Logger
@@ -75,6 +80,8 @@ class MetaPiano extends Actor {
 
   lazy val poemretriever = Akka.system.actorOf(Props[PoemRetriever])
 
+  implicit val timeout = Timeout(5 seconds)
+
   def receive = {
 
     case PDMessage(message) => parsePDMessage(message)
@@ -97,6 +104,11 @@ class MetaPiano extends Actor {
     case StateMessage(message) => {
       Logger.info("Sending state change message to PD")
       puredata ! SendPDMessage(message)
+    }
+
+    case stateQuery: StateQuery => {
+      Logger.info("Querying PDs state")
+      sender ! (statemanager ? stateQuery).mapTo[CurrentState]
     }
 
     case start: StartPD => {

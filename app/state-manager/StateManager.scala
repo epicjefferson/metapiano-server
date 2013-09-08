@@ -78,7 +78,14 @@ class StateManager(targetActor: ActorRef) extends Actor {
 
   def receive = {
 
-    case StateQuery => sender ! CurrentState(states(currentState))
+    case StateQuery() => {
+      Logger.info("Querying my state")
+
+      val reportedState: CurrentState = CurrentState(
+        states.getOrElse(currentState, SystemState("No State", 0, Nil, ""))
+      )
+      sender ! reportedState
+    }
 
     case StateChange(name) => changeState(name)
 
