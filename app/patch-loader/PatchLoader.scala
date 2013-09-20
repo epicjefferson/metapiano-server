@@ -29,7 +29,8 @@ class PatchLoader extends Actor {
         List(
           "load",
           "patch",
-          getPatch
+          getPatch,
+          patchfolder.getAbsolutePath()
         )
       )
     }
