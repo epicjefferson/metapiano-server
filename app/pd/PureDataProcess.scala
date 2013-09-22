@@ -18,6 +18,8 @@ object PureData {
       val basicArgs = List(exe,
                            "-open",
                            patch,
+                           "-stderr",
+                           "-nogui",
                            "-send",
                            "startup port %d".format(port))
 
