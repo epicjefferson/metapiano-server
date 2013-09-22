@@ -42,7 +42,7 @@ class StateManager(targetActor: ActorRef) extends Actor {
   def changeState(name: String) = {
     println("changing state")
 
-      Logger.info("new state is " + name.toString)
+      Logger.info("next state is " + name.toString)
       Logger.info("current state is " + currentState)
 
     states.get(name).map(state =>

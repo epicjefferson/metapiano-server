@@ -141,6 +141,9 @@ class MetaPiano extends Actor {
         Logger.info("Poem requested")
         poemloader ! PoemRequest()
       }
+      case "heartbeat" :: Nil => {
+        Logger.info("heartbeat from PD")
+      }
       case other => Logger.info("Unknown message: " + other.toString)
     }
 

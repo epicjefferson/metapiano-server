@@ -1,4 +1,4 @@
-#N canvas 463 258 589 454 10;
+#N canvas 1127 273 589 454 10;
 #X obj 118 114 r to-patch;
 #X obj 124 271 random 42;
 #X obj 116 148 t b;
@@ -9,6 +9,9 @@
 #X obj 227 386 s from-patch;
 #X msg 347 226 finished;
 #X obj 118 227 metro 1000;
+#X obj 266 38 loadbang;
+#X obj 270 110 print;
+#X msg 271 70 test patch 2;
 #X connect 0 0 2 0;
 #X connect 1 0 6 0;
 #X connect 2 0 3 0;
@@ -20,3 +23,5 @@
 #X connect 6 0 7 0;
 #X connect 8 0 7 0;
 #X connect 9 0 1 0;
+#X connect 10 0 12 0;
+#X connect 12 0 11 0;

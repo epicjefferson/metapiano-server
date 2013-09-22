@@ -1,0 +1,4 @@
+#N canvas 731 484 450 300 10;
+#X obj 70 43 inlet;
+#X obj 72 82 print note;
+#X connect 0 0 1 0;

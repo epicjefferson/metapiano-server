@@ -31,6 +31,7 @@ class PoemRetriever extends Actor {
 
   val poemUrl = current.configuration.getString("metapiano.site.poemendpoint").get
   val poemIdParam = current.configuration.getString("metapiano.site.poemidparam").get
+  val poemDownload = current.configuration.getBoolean("metapiano.site.poemdownload").get
 
   val poemFolder = current.configuration.getString("metapiano.poemfolder").get
 
@@ -75,41 +76,44 @@ class PoemRetriever extends Actor {
 
   def getPoems = {
 
-    val state = ServerState.retrieveOne(
-      1
-    ).getOrElse(ServerState.create(ServerState(1, 0)))
+    if (poemDownload) {
+      val state = ServerState.retrieveOne(
+        1
+      ).getOrElse(ServerState.create(ServerState(1, 0)))
 
-    val requestUrl = poemUrl + "?%s=%s".format(poemIdParam, state.lastPoem)
+      val requestUrl = poemUrl + "?%s=%s".format(poemIdParam, state.lastPoem)
 
-    Logger.info("Downloading poems from %s".format(requestUrl))
+      Logger.info("Downloading poems from %s".format(requestUrl))
 
-    WS.url(requestUrl).get().map { response =>
-      Logger.info("Got response from poem site")
-      response.json.validate[List[MetaPoem]].fold(
-        invalid = (
-          error => Logger.error(error.toString)
-        ),
-        valid = (
-          poems => {
-            Logger.info("Downloaded %s poems".format(poems.length.toString))
-            for (p <- poems) {
-              savePoemToFolder(
-                p.copy(text =
-                  PoemTranslator.translatePoem(p.text)
+      WS.url(requestUrl).get().map { response =>
+        Logger.info("Got response from poem site")
+        response.json.validate[List[MetaPoem]].fold(
+          invalid = (
+            error => Logger.error(error.toString)
+          ),
+          valid = (
+            poems => {
+              Logger.info("Downloaded %s poems".format(poems.length.toString))
+              for (p <- poems) {
+                savePoemToFolder(
+                  p.copy(text =
+                    PoemTranslator.translatePoem(p.text)
+                  )
                 )
-              )
-              Logger.info(p.toString)
+                Logger.info(p.toString)
+              }
+              if (poems.nonEmpty) {
+                val maxId = poems.map(_.id).max
+                Logger.info("Max poem id is %s".format(maxId.toString))
+                ServerState.updateLastPoemId(1, poems.map(_.id).max)
+              } else {
+                Logger.info("No new poems to download")
+              }
             }
-            if (poems.nonEmpty) {
-              val maxId = poems.map(_.id).max
-              Logger.info("Max poem id is %s".format(maxId.toString))
-              ServerState.updateLastPoemId(1, poems.map(_.id).max)
-            } else {
-              Logger.info("No new poems to download")
-            }
-          }
+          )
         )
-      )
+      }
+
     }
 
   }

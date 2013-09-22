@@ -1,0 +1,14 @@
+#N canvas 715 754 450 300 10;
+#X obj 64 88 inlet;
+#X obj 64 198 print poemfile;
+#X obj 194 198 delay 10000;
+#X obj 64 137 route poemfile;
+#X obj 194 164 t b;
+#X msg 194 225 finished;
+#X obj 194 253 outlet;
+#X connect 0 0 3 0;
+#X connect 2 0 5 0;
+#X connect 3 0 1 0;
+#X connect 3 0 4 0;
+#X connect 4 0 2 0;
+#X connect 5 0 6 0;

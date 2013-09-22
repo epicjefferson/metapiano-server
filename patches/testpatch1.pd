@@ -9,6 +9,9 @@
 #X obj 227 386 s from-patch;
 #X msg 347 226 finished;
 #X obj 118 227 metro 1000;
+#X obj 276 54 loadbang;
+#X msg 276 90 test patch 1;
+#X obj 279 130 print;
 #X connect 0 0 2 0;
 #X connect 1 0 6 0;
 #X connect 2 0 3 0;
@@ -20,3 +23,5 @@
 #X connect 6 0 7 0;
 #X connect 8 0 7 0;
 #X connect 9 0 1 0;
+#X connect 10 0 11 0;
+#X connect 11 0 12 0;

@@ -82,6 +82,10 @@ class PDMessageHandler(actor: ActorRef) extends SimpleChannelHandler {
     ch.close()
   }
 
+  override def channelClosed(ctx: ChannelHandlerContext, e: ChannelStateEvent) {
+    println("channel closed: " + e.getState().toString)
+  }
+
 }
 
 class PDChannel(ch: Channel) {

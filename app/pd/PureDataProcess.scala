@@ -16,8 +16,6 @@ object PureData {
                    extraArgs:List[String]): List[String] = {
 
       val basicArgs = List(exe,
-                           "-stderr",
-                           "-nogui",
                            "-open",
                            patch,
                            "-send",
