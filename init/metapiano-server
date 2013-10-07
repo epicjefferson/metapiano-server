@@ -1,0 +1,44 @@
+#! /bin/sh
+
+#This is an init.d script for starting the app
+#It will call the start script in the dist archive
+
+### BEGIN INIT INFO
+# Provides: metapiano-server
+# Required-Start: $local_fs $remote_fs $network $syslog
+# Required-Stop: $local_fs $remote_fs $network $syslog
+# Default-Start: 2 3 4 5
+# Default-Stop: 0 1 6
+# Short-Description:
+# Description:
+### END INIT INFO
+
+APP="metapiano-server"
+APP_PATH="/home/jefferson/Desktop/meta-piano/metapiano-server/server"
+PIDFILE="${APP_PATH}/RUNNING_PID"
+#APP_LOG_PATH="/var/log/mcsvc" # deploy will symbolic link /opt/{APP}/logs to that folder
+CONFIG_FILE_PATH="${APP_PATH}/application.conf"
+USER="jefferson"
+GROUP="jefferson"
+PORT=9000
+EXTRA="-Xms128M -Xmx512m -server"
+
+
+case "$1" in
+    start)
+        echo "Starting ${APP}"
+        START_CMD="${APP_PATH}/start -Dhttp.port=${PORT} -Dconfig.file=${CONFIG_FILE_PATH} ${EXTRA} -DapplyEvolutions.default=true"
+        /sbin/start-stop-daemon --start --pidfile "${PIDFILE}" --background --chuid ${USER}:${GROUP} --chdir $APP_PATH --exec /bin/bash -- ${START_CMD}
+        sleep 1
+        ;;
+    stop)
+        echo "Stopping ${APP}"
+        /sbin/start-stop-daemon --stop --pidfile "${PIDFILE}" --user "${USER}" --retry 30
+        ;;
+    *)
+        echo "Usage: /etc/init.d/$APP {start|stop}"
+        exit 1
+        ;;
+esac
+
+exit 0
